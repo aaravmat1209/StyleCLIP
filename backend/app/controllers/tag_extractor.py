@@ -86,3 +86,6 @@ def get_tags_from_clip(image: Image.Image, model_name="ViT-B/32", top_k: int = 5
     top_tags = [label for label, _ in sorted_tags[:top_k]]
 
     return top_tags
+
+def extract_tags_from_image(image: Image.Image) -> List[str]:
+    return get_tags_from_clip(image)

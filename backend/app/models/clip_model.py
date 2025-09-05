@@ -21,6 +21,10 @@ class CLIPModel:
             image_features = self.model.encode_image(image_input)
             return image_features / image_features.norm(dim=-1, keepdim=True)
 
+    def get_image_embedding(self, image_path: str) -> torch.Tensor:
+        image = Image.open(image_path)
+        return self.get_image_embedding_from_pil(image)
+
     def get_text_embedding(self, text: str) -> torch.Tensor:
         with torch.no_grad():
             text_input = clip.tokenize([text]).to(device)

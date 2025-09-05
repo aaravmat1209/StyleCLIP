@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { uploadClothingItem, tagClothingImage } from './utils/api';
+import { uploadClothingItem, tagClothingImage, getSimilarItems } from './utils/api';
 import ImageUpload from './components/ImageUpload';
 import DetectedTags from './components/DetectedTags';
 import Recommendations from './components/Recommendations';
 
 function App() {
   const [image, setImage] = useState(null);
-  const [detectedItems, setDetectedItems] = useState({});
+  const [detectedItems, setDetectedItems] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [error, setError] = useState(null);
 
@@ -14,13 +14,15 @@ function App() {
     try {
       // Step 1: Upload the clothing item to the backend
       const uploadResponse = await uploadClothingItem(image);
-      setDetectedItems(uploadResponse.tags || {});
+      setDetectedItems(uploadResponse.tags || []);
 
-      // Step 2: Get recommendations from the backend
-      const tagResponse = await tagClothingImage(image);
-      setRecommendations(tagResponse.recommendations || []);
+      // Step 2: Get similar items using the uploaded item's ID
+      if (uploadResponse.id) {
+        const similarItems = await getSimilarItems(uploadResponse.id);
+        setRecommendations(similarItems || []);
+      }
     } catch (error) {
-      console.error('Error uploading or tagging clothing item:', error);
+      console.error('Error uploading or getting similar items:', error);
       setError("Something went wrong while processing the image. Please try again.");
     }
   };
@@ -45,7 +47,7 @@ function App() {
         </div>
       )}
 
-      {Object.keys(detectedItems).length > 0 && (
+      {detectedItems.length > 0 && (
         <DetectedTags detectedItems={detectedItems} />
       )}
 

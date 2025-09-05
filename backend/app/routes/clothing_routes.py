@@ -11,7 +11,8 @@ from backend.app.schemas.clothing_schemas import (
 )
 from backend.app.controllers.clothing_controller import (
     handle_upload_clothing_item,
-    handle_tag_request
+    handle_tag_request,
+    get_similar_items
 )
 
 logger = logging.getLogger(__name__)
@@ -54,3 +55,14 @@ async def multi_garment_tagging(file: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"Multi-tagging error: {e}")
         raise HTTPException(status_code=500, detail="Failed to tag garments.")
+
+@router.get("/similar/{item_id}")
+async def get_similar_clothing(item_id: str, limit: int = 5):
+    """
+    Get similar clothing items based on visual similarity
+    """
+    try:
+        return await get_similar_items(item_id, limit)
+    except Exception as e:
+        logger.exception("Error getting similar items")
+        raise HTTPException(status_code=500, detail="Failed to find similar items.")

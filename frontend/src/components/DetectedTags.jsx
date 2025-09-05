@@ -6,9 +6,7 @@ const DetectedTags = ({ detectedItems }) => {
       <h2 className="text-xl font-semibold mb-2">Detected Tags:</h2>
       <ul className="list-disc ml-6 space-y-1">
         {detectedItems.map((tag, index) => (
-          <li key={index}>
-            <strong>{tag.label}:</strong> {tag.value}
-          </li>
+          <li key={index}>{tag}</li>
         ))}
       </ul>
     </div>

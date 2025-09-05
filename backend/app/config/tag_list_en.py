@@ -292,3 +292,5 @@ garment_types = {
         ]
     }
 }
+
+GARMENT_TYPES = garment_types

@@ -63,3 +63,18 @@ export const tagClothingImage = async (image) => {
     throw error;
   }
 };
+
+export const getSimilarItems = async (itemId, limit = 5) => {
+  try {
+    const response = await fetch(`http://localhost:8000/clothing/similar/${itemId}?limit=${limit}`);
+    
+    if (!response.ok) {
+      throw new Error("Failed to get similar items");
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error getting similar items:", error);
+    throw error;
+  }
+};

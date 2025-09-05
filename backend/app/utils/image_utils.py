@@ -7,3 +7,6 @@ def crop_by_bounding_box(image: Image.Image, bbox: dict) -> Image.Image:
     right = left + int(bbox["Width"] * width)
     bottom = top + int(bbox["Height"] * height)
     return image.crop((left, top, right, bottom))
+
+def crop_from_normalized_bbox(image: Image.Image, bbox: dict) -> Image.Image:
+    return crop_by_bounding_box(image, bbox)
