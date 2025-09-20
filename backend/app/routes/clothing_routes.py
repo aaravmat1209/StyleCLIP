@@ -1,34 +1,29 @@
 import logging
-from fastapi import UploadFile, File
-from backend.app.controllers.clothing_detector import detect_and_crop_garments
-from backend.app.controllers.tag_extractor import extract_tags_from_image  # Assume this exists
 from fastapi import APIRouter, HTTPException
 from backend.app.schemas.clothing_schemas import (
-    UploadClothingItemRequest,
-    UploadClothingItemResponse,
     TagRequest,
     TagResponse
 )
 from backend.app.controllers.clothing_controller import (
-    handle_upload_clothing_item,
     handle_tag_request,
-    get_similar_items
+    get_similar_items_from_csv,
+    process_csv_data
 )
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/clothing", tags=["Clothing"])
 
-@router.post("/upload", response_model=UploadClothingItemResponse)
-async def upload_clothing_item(payload: UploadClothingItemRequest):
+@router.post("/process-csv")
+async def process_csv_data_endpoint():
     """
-    Upload a clothing item image and return the predicted garment type and feature tags.
+    Process CSV files and generate embeddings for all products.
     """
     try:
-        return await handle_upload_clothing_item(payload)
+        return await process_csv_data()
     except Exception as e:
-        logger.exception("Error during clothing upload")
-        raise HTTPException(status_code=500, detail="Failed to process clothing upload.")
+        logger.exception("Error processing CSV data")
+        raise HTTPException(status_code=500, detail="Failed to process CSV data.")
 
 @router.post("/tag", response_model=TagResponse)
 async def tag_clothing_image(payload: TagRequest):
@@ -41,28 +36,24 @@ async def tag_clothing_image(payload: TagRequest):
         logger.exception("Error during clothing image tagging")
         raise HTTPException(status_code=500, detail="Failed to extract tags from image.")
 
-@router.post("/multi-tag")
-async def multi_garment_tagging(file: UploadFile = File(...)):
+@router.get("/recommendations")
+async def get_recommendations(image_url: str = None, limit: int = 5):
+    """
+    Get clothing recommendations based on uploaded image or similar items from CSV data.
+    """
     try:
-        image_bytes = await file.read()
-        cropped_images = detect_and_crop_garments(image_bytes)
-
-        tags_list = []
-        for garment_img in cropped_images:
-            tags = extract_tags_from_image(garment_img)
-            tags_list.append(tags)
-        return {"garments": tags_list}
+        return await get_similar_items_from_csv(image_url, limit)
     except Exception as e:
-        logger.error(f"Multi-tagging error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to tag garments.")
+        logger.exception("Error getting recommendations")
+        raise HTTPException(status_code=500, detail="Failed to get recommendations.")
 
-@router.get("/similar/{item_id}")
-async def get_similar_clothing(item_id: str, limit: int = 5):
+@router.get("/similar/{product_id}")
+async def get_similar_clothing(product_id: str, limit: int = 5):
     """
-    Get similar clothing items based on visual similarity
+    Get similar clothing items based on product ID from CSV data
     """
     try:
-        return await get_similar_items(item_id, limit)
+        return await get_similar_items(product_id, limit)
     except Exception as e:
         logger.exception("Error getting similar items")
         raise HTTPException(status_code=500, detail="Failed to find similar items.")

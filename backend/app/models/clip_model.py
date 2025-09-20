@@ -24,6 +24,14 @@ class CLIPModel:
     def get_image_embedding(self, image_path: str) -> torch.Tensor:
         image = Image.open(image_path)
         return self.get_image_embedding_from_pil(image)
+    
+    def get_image_embedding_from_url(self, url: str) -> torch.Tensor:
+        """Get embedding from image URL"""
+        import requests
+        from io import BytesIO
+        response = requests.get(url, timeout=10)
+        image = Image.open(BytesIO(response.content))
+        return self.get_image_embedding_from_pil(image)
 
     def get_text_embedding(self, text: str) -> torch.Tensor:
         with torch.no_grad():
